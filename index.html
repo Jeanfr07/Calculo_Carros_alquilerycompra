@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Control - Alquiler y Venta de Vehículo</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --accent-primary: #3498db;
+            --accent-success: #2ecc71;
+            --accent-danger: #e74c3c;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .grid {
+            display: block;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                display: grid;
+                grid-template-columns: 1fr 1.5fr;
+                gap: 24px;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        input[type="date"], input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--text-main);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #1a252f;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-box {
+            background: var(--bg-color);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .metric-box.danger .metric-value {
+            color: var(--accent-danger);
+        }
+
+        .metric-box.success .metric-value {
+            color: var(--accent-success);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+            font-weight: bold;
+            background-color: #f8fafc;
+        }
+
+        .proyeccion-box {
+            background: #eef2f7;
+            border-left: 4px solid var(--accent-primary);
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+        }
+
+        .proyeccion-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .proyeccion-date {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .progress-container {
+            margin-top: 15px;
+            background-color: #e2e8f0;
+            border-radius: 10px;
+            height: 8px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background-color: var(--accent-success);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Control de Alquiler-Venta de Vehículo</h1>
+        <p>Modelo de S/ 140 diarios (S/ 100 Alquiler / S/ 40 Compra) • Excluye Domingos • Meta: 1,300 Pagos</p>
+    </header>
+
+    <div class="grid">
+        <!-- Columna Izquierda: Entradas -->
+        <div class="card">
+            <div class="card-title">Panel de Datos</div>
+            <form id="calcForm" onsubmit="event.preventDefault(); calcularTodo();">
+                <div class="form-group">
+                    <label for="fechaInicio">Fecha de Inicio</label>
+                    <input type="date" id="fechaInicio" value="2025-08-07" required>
+                </div>
+                <div class="form-group">
+                    <label for="fechaCorte">Fecha de Corte / Consulta</label>
+                    <input type="date" id="fechaCorte" value="2026-05-16" required>
+                </div>
+                <div class="form-group">
+                    <label for="diasPagados">Días Pagados hasta la Fecha</label>
+                    <input type="number" id="diasPagados" value="156" min="0" required>
+                </div>
+                <button type="submit">Calcular Estado</button>
+            </form>
+        </div>
+
+        <!-- Columna Derecha: Resultados -->
+        <div>
+            <div class="card">
+                <div class="card-title">Resumen del Estado Actual</div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-label">Días Calendario Absolutos</div>
+                        <div id="mCal" class="metric-value">-</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Días Debidos (Lun-Sáb)</div>
+                        <div id="mDebidos" class="metric-value">-</div>
+                    </div>
+                    <div class="metric-box danger" id="boxRetraso">
+                        <div class="metric-label">Días de Retraso</div>
+                        <div id="mRetraso" class="metric-value">-</div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Por Día</th>
+                                <th>Abonado</th>
+                                <th>Deuda por Retraso</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Alquiler del Carro</td>
+                                <td>S/ 100.00</td>
+                                <td id="tAlqPagado">S/ 0.00</td>
+                                <td id="tAlqDeuda" style="color: var(--accent-danger);">S/ 0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Amortización Compra</td>
+                                <td>S/ 40.00</td>
+                                <td id="tComPagado">S/ 0.00</td>
+                                <td id="tComDeuda" style="color: var(--accent-danger);">S/ 0.00</td>
+                            </tr>
+                            <tr>
+                                <td>Total General</td>
+                                <td>S/ 140.00</td>
+                                <td id="tTotalPagado">S/ 0.00</td>
+                                <td id="tTotalDeuda" style="color: var(--accent-danger);">S/ 0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Proyección del Contrato Financiero</div>
+                <p style="font-size: 13px; color: var(--text-muted);">Progreso de amortización del carro (1,300 días de pago requeridos):</p>
+                <div class="progress-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                    <span id="progresoTexto">0 / 1,300 días</span>
+                    <span id="progresoPorcentaje">0%</span>
+                </div>
+
+                <div class="proyeccion-box">
+                    <div class="proyeccion-title">Fecha Estimada de Finalización Original</div>
+                    <div id="fechaFinContrato" class="proyeccion-date">-</div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">*Esta fecha calcula cuándo se completan los 1,300 pagos asumiendo un cumplimiento perfecto de lunes a sábado desde el inicio (sin contar los retrasos actuales).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function contarDiasLaborables(fechaInicio, fechaFin) {
+        let count = 0;
+        let actual = new Date(fechaInicio.getTime());
+        
+        // Loop que incluye la fecha de fin
+        while (actual <= fechaFin) {
+            if (actual.getUTCDay() !== 0) { // 0 es Domingo
+                count++;
+            }
+            actual.setUTCDate(actual.getUTCDate() + 1);
+        }
+        return count;
+    }
+
+    function calcularFechaTermino(fechaInicio, totalDiasPago) {
+        let actual = new Date(fechaInicio.getTime());
+        let diasContados = actual.getUTCDay() !== 0 ? 1 : 0;
+        
+        while (diasContados < totalDiasPago) {
+            actual.setUTCDate(actual.getUTCDate() + 1);
+            if (actual.getUTCDay() !== 0) {
+                diasContados++;
+            }
+        }
+        return actual;
+    }
+
+    function formatearFecha(date) {
+        const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
+        return date.toLocaleDateString('es-ES', opciones);
+    }
+
+    function calcularTodo() {
+        const inputInicio = document.getElementById('fechaInicio').value;
+        const inputCorte = document.getElementById('fechaCorte').value;
+        const diasPagados = parseInt(document.getElementById('diasPagados').value) || 0;
+
+        if (!inputInicio || !inputCorte) return;
+
+        // Crear fechas en UTC para evitar desfases horarios locales
+        const fInicio = new Date(inputInicio + 'T00:00:00Z');
+        const fCorte = new Date(inputCorte + 'T00:00:00Z');
+
+        if (fCorte < fInicio) {
+            alert("La fecha de corte no puede ser menor a la fecha de inicio.");
+            return;
+        }
+
+        // 1. Calcular días transcurridos sin domingos
+        const diasEsperados = contarDiasLaborables(fInicio, fCorte);
+        const diasCalendario = Math.round((fCorte - fInicio) / (1000 * 60 * 60 * 24)) + 1;
+
+        // 2. Calcular retrasos
+        let diasRetraso = diasEsperados - diasPagados;
+        if (diasRetraso < 0) diasRetraso = 0;
+
+        // 3. Cálculos de dinero
+        const pagadoAlquiler = diasPagados * 100;
+        const pagadoCompra = diasPagados * 40;
+        const pagadoTotal = diasPagados * 140;
+
+        const deudaAlquiler = diasRetraso * 100;
+        const deudaCompra = diasRetraso * 40;
+        const deudaTotal = diasRetraso * 140;
+
+        // 4. Proyección de término (1300 días)
+        const totalDiasContrato = 1300;
+        const fFinalizacion = calcularFechaTermino(fInicio, totalDiasContrato);
+
+        // 5. Renderizar en la interfaz
+        document.getElementById('mCal').innerText = diasCalendario;
+        document.getElementById('mDebidos').innerText = diasEsperados;
+        document.getElementById('mRetraso').innerText = diasRetraso;
+
+        // Cambiar color si está al día o retrasado
+        const boxRetraso = document.getElementById('boxRetraso');
+        if (diasRetraso > 0) {
+            boxRetraso.className = "metric-box danger";
+        } else {
+            boxRetraso.className = "metric-box success";
+        }
+
+        // Tabla de dinero
+        document.getElementById('tAlqPagado').innerText = `S/ ${pagadoAlquiler.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+        document.getElementById('tAlqDeuda').innerText = `S/ ${deudaAlquiler.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+        
+        document.getElementById('tComPagado').innerText = `S/ ${pagadoCompra.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+        document.getElementById('tComDeuda').innerText = `S/ ${deudaCompra.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+
+        document.getElementById('tTotalPagado').innerText = `S/ ${pagadoTotal.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+        document.getElementById('tTotalDeuda').innerText = `S/ ${deudaTotal.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+
+        // Barra de progreso
+        const porcentaje = Math.min((diasPagados / totalDiasContrato) * 100, 100).toFixed(1);
+        document.getElementById('progressBar').style.width = `${porcentaje}%`;
+        document.getElementById('progresoTexto').innerText = `${diasPagados.toLocaleString()} / ${totalDiasContrato.toLocaleString()} días`;
+        document.getElementById('progresoPorcentaje').innerText = `${porcentaje}%`;
+
+        // Fecha finalización
+        document.getElementById('fechaFinContrato').innerText = formatearFecha(fFinalizacion);
+    }
+
+    // Ejecutar al cargar la página por primera vez
+    window.onload = calcularTodo;
+</script>
+
+</body>
+</html>
