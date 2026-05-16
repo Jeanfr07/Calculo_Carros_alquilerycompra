@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Control - Alquiler y Venta de Vehículo</title>
+    <title>Calculadora de Control - Alquiler y Venta de Vehículos</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -94,7 +94,7 @@
             color: var(--text-main);
         }
 
-        input[type="date"], input[type="number"] {
+        input[type="date"], input[type="number"], select {
             width: 100%;
             padding: 10px 12px;
             border: 1px solid var(--border-color);
@@ -103,9 +103,10 @@
             color: var(--text-main);
             background-color: #f8fafc;
             transition: all 0.2s;
+            cursor: pointer;
         }
 
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--accent-primary);
             background-color: #fff;
@@ -233,14 +234,26 @@
             width: 0%;
             transition: width 0.3s ease;
         }
+        
+        .placa-badge {
+            display: inline-block;
+            background-color: var(--accent-primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>Control de Alquiler-Venta de Vehículo</h1>
-        <p>Modelo de S/ 140 diarios (S/ 100 Alquiler / S/ 40 Compra) • Excluye Domingos • Meta: 1,300 Pagos</p>
+        <h1>Control de Alquiler-Venta de Flota</h1>
+        <p>S/ 140 diarios (S/ 100 Alquiler / S/ 40 Compra) • Excluye Domingos</p>
     </header>
 
     <div class="grid">
@@ -248,6 +261,15 @@
         <div class="card">
             <div class="card-title">Panel de Datos</div>
             <form id="calcForm" onsubmit="event.preventDefault(); calcularTodo();">
+                <div class="form-group">
+                    <label for="placaSelect">Seleccionar Vehículo (Placa)</label>
+                    <select id="placaSelect" onchange="actualizarInfoVehiculo(); calcularTodo();">
+                        <option value="VCO-164">VCO-164 (S/ 52,000 - 1,300 días)</option>
+                        <option value="VCO-198">VCO-198 (S/ 57,000 - 1,425 días)</option>
+                        <option value="VDA-038">VDA-038 (S/ 57,000 - 1,425 días)</option>
+                        <option value="VDA-741">VDA-741 (S/ 57,000 - 1,425 días)</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="fechaInicio">Fecha de Inicio</label>
                     <input type="date" id="fechaInicio" value="2025-08-07" required>
@@ -267,11 +289,14 @@
         <!-- Columna Derecha: Resultados -->
         <div>
             <div class="card">
-                <div class="card-title">Resumen del Estado Actual</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg-color); padding-bottom: 8px; margin-bottom: 20px;">
+                    <div class="card-title" style="border: none; margin-bottom: 0; padding-bottom: 0;">Resumen del Estado Actual</div>
+                    <div id="badgePlaca" class="placa-badge">VCO-164</div>
+                </div>
                 
                 <div class="metrics-grid">
                     <div class="metric-box">
-                        <div class="metric-label">Días Calendario Absolutos</div>
+                        <div class="metric-label">Días Calendario</div>
                         <div id="mCal" class="metric-value">-</div>
                     </div>
                     <div class="metric-box">
@@ -320,7 +345,7 @@
 
             <div class="card">
                 <div class="card-title">Proyección del Contrato Financiero</div>
-                <p style="font-size: 13px; color: var(--text-muted);">Progreso de amortización del carro (1,300 días de pago requeridos):</p>
+                <p id="textoMeta" style="font-size: 13px; color: var(--text-muted);">Progreso de amortización del carro (1,300 días de pago requeridos):</p>
                 <div class="progress-container">
                     <div id="progressBar" class="progress-bar"></div>
                 </div>
@@ -332,7 +357,7 @@
                 <div class="proyeccion-box">
                     <div class="proyeccion-title">Fecha Estimada de Finalización Original</div>
                     <div id="fechaFinContrato" class="proyeccion-date">-</div>
-                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">*Esta fecha calcula cuándo se completan los 1,300 pagos asumiendo un cumplimiento perfecto de lunes a sábado desde el inicio (sin contar los retrasos actuales).</p>
+                    <p id="textoNotaFinal" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">*Esta fecha calcula cuándo se completan los 1,300 pagos asumiendo un cumplimiento perfecto de lunes a sábado desde el inicio.</p>
                 </div>
             </div>
         </div>
@@ -340,13 +365,28 @@
 </div>
 
 <script>
+    const flota = {
+        "VCO-164": { costoTotal: 52000, diasTotales: 1300, alquilerDiario: 100, compraDiaria: 40 },
+        "VCO-198": { costoTotal: 57000, diasTotales: 1425, alquilerDiario: 100, compraDiaria: 40 },
+        "VDA-038": { costoTotal: 57000, diasTotales: 1425, alquilerDiario: 100, compraDiaria: 40 },
+        "VDA-741": { costoTotal: 57000, diasTotales: 1425, alquilerDiario: 100, compraDiaria: 40 }
+    };
+
+    function actualizarInfoVehiculo() {
+        const placa = document.getElementById('placaSelect').value;
+        const vehiculo = flota[placa];
+        
+        document.getElementById('badgePlaca').innerText = placa;
+        document.getElementById('textoMeta').innerText = `Progreso de amortización del carro (${vehiculo.diasTotales.toLocaleString()} días de pago requeridos por un valor de S/ ${vehiculo.costoTotal.toLocaleString()}):`;
+        document.getElementById('textoNotaFinal').innerText = `*Esta fecha calcula cuándo se completan los ${vehiculo.diasTotales.toLocaleString()} pagos asumiendo un cumplimiento perfecto de lunes a sábado desde el inicio (sin contar los retrasos actuales).`;
+    }
+
     function contarDiasLaborables(fechaInicio, fechaFin) {
         let count = 0;
         let actual = new Date(fechaInicio.getTime());
         
-        // Loop que incluye la fecha de fin
         while (actual <= fechaFin) {
-            if (actual.getUTCDay() !== 0) { // 0 es Domingo
+            if (actual.getUTCDay() !== 0) { 
                 count++;
             }
             actual.setUTCDate(actual.getUTCDate() + 1);
@@ -373,13 +413,15 @@
     }
 
     function calcularTodo() {
+        const placa = document.getElementById('placaSelect').value;
+        const vehiculo = flota[placa];
+
         const inputInicio = document.getElementById('fechaInicio').value;
         const inputCorte = document.getElementById('fechaCorte').value;
         const diasPagados = parseInt(document.getElementById('diasPagados').value) || 0;
 
         if (!inputInicio || !inputCorte) return;
 
-        // Crear fechas en UTC para evitar desfases horarios locales
         const fInicio = new Date(inputInicio + 'T00:00:00Z');
         const fCorte = new Date(inputCorte + 'T00:00:00Z');
 
@@ -388,33 +430,26 @@
             return;
         }
 
-        // 1. Calcular días transcurridos sin domingos
         const diasEsperados = contarDiasLaborables(fInicio, fCorte);
         const diasCalendario = Math.round((fCorte - fInicio) / (1000 * 60 * 60 * 24)) + 1;
 
-        // 2. Calcular retrasos
         let diasRetraso = diasEsperados - diasPagados;
         if (diasRetraso < 0) diasRetraso = 0;
 
-        // 3. Cálculos de dinero
-        const pagadoAlquiler = diasPagados * 100;
-        const pagadoCompra = diasPagados * 40;
-        const pagadoTotal = diasPagados * 140;
+        const pagadoAlquiler = diasPagados * vehiculo.alquilerDiario;
+        const pagadoCompra = diasPagados * vehiculo.compraDiaria;
+        const pagadoTotal = pagadoAlquiler + pagadoCompra;
 
-        const deudaAlquiler = diasRetraso * 100;
-        const deudaCompra = diasRetraso * 40;
-        const deudaTotal = diasRetraso * 140;
+        const deudaAlquiler = diasRetraso * vehiculo.alquilerDiario;
+        const deudaCompra = diasRetraso * vehiculo.compraDiaria;
+        const deudaTotal = deudaAlquiler + deudaCompra;
 
-        // 4. Proyección de término (1300 días)
-        const totalDiasContrato = 1300;
-        const fFinalizacion = calcularFechaTermino(fInicio, totalDiasContrato);
+        const fFinalizacion = calcularFechaTermino(fInicio, vehiculo.diasTotales);
 
-        // 5. Renderizar en la interfaz
         document.getElementById('mCal').innerText = diasCalendario;
         document.getElementById('mDebidos').innerText = diasEsperados;
         document.getElementById('mRetraso').innerText = diasRetraso;
 
-        // Cambiar color si está al día o retrasado
         const boxRetraso = document.getElementById('boxRetraso');
         if (diasRetraso > 0) {
             boxRetraso.className = "metric-box danger";
@@ -422,7 +457,6 @@
             boxRetraso.className = "metric-box success";
         }
 
-        // Tabla de dinero
         document.getElementById('tAlqPagado').innerText = `S/ ${pagadoAlquiler.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
         document.getElementById('tAlqDeuda').innerText = `S/ ${deudaAlquiler.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
         
@@ -432,18 +466,18 @@
         document.getElementById('tTotalPagado').innerText = `S/ ${pagadoTotal.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
         document.getElementById('tTotalDeuda').innerText = `S/ ${deudaTotal.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
 
-        // Barra de progreso
-        const porcentaje = Math.min((diasPagados / totalDiasContrato) * 100, 100).toFixed(1);
+        const porcentaje = Math.min((diasPagados / vehiculo.diasTotales) * 100, 100).toFixed(1);
         document.getElementById('progressBar').style.width = `${porcentaje}%`;
-        document.getElementById('progresoTexto').innerText = `${diasPagados.toLocaleString()} / ${totalDiasContrato.toLocaleString()} días`;
+        document.getElementById('progresoTexto').innerText = `${diasPagados.toLocaleString()} / ${vehiculo.diasTotales.toLocaleString()} días`;
         document.getElementById('progresoPorcentaje').innerText = `${porcentaje}%`;
 
-        // Fecha finalización
         document.getElementById('fechaFinContrato').innerText = formatearFecha(fFinalizacion);
     }
 
-    // Ejecutar al cargar la página por primera vez
-    window.onload = calcularTodo;
+    window.onload = function() {
+        actualizarInfoVehiculo();
+        calcularTodo();
+    };
 </script>
 
 </body>
